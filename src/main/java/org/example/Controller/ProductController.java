@@ -1,6 +1,7 @@
 package org.example.Controller;
 
 import org.example.Exception.ProductException;
+import org.example.Exception.SellerException;
 import org.example.Model.Product;
 import org.example.Service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,13 +24,45 @@ public class ProductController {
         List<Product> products = productService.getProducts();
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
-    @PostMapping("/product")
-    public ResponseEntity<Object> postProductEndpoint(@RequestBody Product product) throws ProductException {
-        productService.addProduct(product);
+    @PostMapping("seller/{id}/product")
+    public ResponseEntity<Product> postProductEndpoint(@RequestBody Product product, @PathVariable long id) throws ProductException {
         try{
+            productService.addProduct(id, product);
             return new ResponseEntity<>(product, HttpStatus.CREATED);
-        }catch(Exception e){
-            return new ResponseEntity<>("invalid product post", HttpStatus.BAD_REQUEST);
+        }catch(ProductException e){
+            return new ResponseEntity<>(product, HttpStatus.BAD_REQUEST);
         }
+    }
+    @GetMapping("/product/{id}")
+    public ResponseEntity<Product> getProductByIdEndpoint(@PathVariable long id){
+        try{
+            Product product = productService.getProductById(id);
+            return new ResponseEntity<>(product, HttpStatus.OK);
+        }catch (ProductException e){
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+    }
+    @DeleteMapping("/product/{id}")
+    public ResponseEntity<Product> deleteProductEndpoint(@PathVariable long id){
+        try{
+            if(productService.getProductById(id) != null) {
+                productService.deleteProduct(id);
+            }
+        }catch (ProductException e){
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+        return null;
+    }
+    @PutMapping("/seller/{id}/product/{id}")
+    public ResponseEntity<Product> updateProductEndpoint(@RequestBody Product product, @RequestParam long id, @RequestParam long productId){
+        try{
+            if(productService.getProductById(productId) != null) {
+                productService.updateProduct(productId, product);
+                return new ResponseEntity<>(product, HttpStatus.OK);
+            }
+        }catch (ProductException e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(product, HttpStatus.BAD_REQUEST);
     }
 }

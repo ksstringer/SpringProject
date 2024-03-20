@@ -3,6 +3,7 @@ package org.example.Service;
 import org.example.Exception.ProductException;
 import org.example.Exception.ProductFormatException;
 import org.example.Exception.ProductNotFoundException;
+import org.example.Exception.SellerException;
 import org.example.Main;
 import org.example.Model.Product;
 import org.example.Model.Seller;
@@ -10,7 +11,11 @@ import org.example.Repository.ProductRepository;
 import org.example.Repository.SellerRepository;
 import org.h2.jdbc.JdbcSQLDataException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import javax.swing.text.html.Option;
 import java.util.List;
@@ -49,7 +54,6 @@ public class ProductService {
             seller = optional.get();
         }
         Product savedProduct = productRepository.save(product);
-        //if the saving products to sellers doesn't work, remove next 2 lines, and remove everything before "=" above
         seller.getProducts().add(savedProduct);
         sellerRepository.save(seller);
         Main.log.info("Product added: " + product.toString());
@@ -65,7 +69,7 @@ public class ProductService {
             return productOptional.get();
         }
     }
-    public Product updateProduct(long id, Product product) throws ProductException {
+    public void updateProduct(long id, Product product) throws ProductException {
         if(product.getName() == null || product.getName().isEmpty()){
             Main.log.warn("Product name is empty");
             throw new ProductFormatException("Product name is empty");
@@ -82,7 +86,6 @@ public class ProductService {
         } else {
             throw new ProductException("Invalid Seller");
         }
-        return product;
     }
     public void deleteProduct(long id){
         Optional<Product> productOptional = productRepository.findById(id);
