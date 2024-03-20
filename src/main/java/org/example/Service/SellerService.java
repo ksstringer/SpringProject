@@ -23,28 +23,24 @@ public class SellerService {
         Main.log.info("Seller List returned: " + sellerList);
         return sellerList;
     }
-    public Seller getSellerById(int id) {
+    public Seller getSellerById(long id) throws SellerException {
         Optional<Seller> sellerOptional = sellerRepository.findById(id);
-        Seller seller = sellerOptional.get();
-        Main.log.info("Seller found: " + seller);
-        return sellerOptional.get();
+        if(sellerOptional.isEmpty()) {
+            Main.log.warn("Seller id " +id+ "does not exist");
+            throw new SellerException("Seller id " +id+ "does not exist");
+        }else{
+            Seller seller = sellerOptional.get();
+            Main.log.info("Seller found: " + seller);
+            return sellerOptional.get();
+        }
     }
     public void addSeller(Seller seller) throws SellerException {
         if(seller.getName().isEmpty()){
             Main.log.warn("Seller name is empty");
             throw new SellerException("Seller name is empty");
         }
-        try{
+        else{
             this.sellerRepository.save(seller);
-            //how to connect try-catch block with spring?
-        }catch (SellerException e){
-            Main.log.warn(e.getMessage());
-            throw new SellerException(e.getMessage());
         }
-    }
-    public boolean isVerifiedSeller(int sellerId){
-        //figure out how to replace DAO query and calculation of true/false for whether the id exists or not
-        //required for check in Product Service
-        return false;
     }
 }

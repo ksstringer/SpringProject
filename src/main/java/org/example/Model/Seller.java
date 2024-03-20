@@ -1,42 +1,22 @@
 package org.example.Model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.List;
 
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+@EqualsAndHashCode
+@ToString
 public class Seller {
     private String name;
     @Id
-    private int id;
-
-    public Seller() {
-    }
-
-    public Seller(int id, String name) {
-        this.name = name;
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    @Override
-    public String toString() {
-        return "Seller{" +
-                "name='" + name + '\'' +
-                '}';
-    }
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private long id;
+    @OneToMany
+    @JoinColumn(name="seller_fk")
+    public List<Product> products;
 }

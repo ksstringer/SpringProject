@@ -2,23 +2,28 @@ package org.example.Service;
 
 import org.example.Exception.ProductException;
 import org.example.Exception.ProductFormatException;
+import org.example.Exception.ProductNotFoundException;
 import org.example.Main;
 import org.example.Model.Product;
+import org.example.Model.Seller;
 import org.example.Repository.ProductRepository;
+import org.example.Repository.SellerRepository;
 import org.h2.jdbc.JdbcSQLDataException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class ProductService {
     ProductRepository productRepository;
-    public SellerService sellerService;
+    SellerRepository sellerRepository;
     @Autowired
-    public ProductService(ProductRepository productRepository){
+    public ProductService(ProductRepository productRepository, SellerRepository sellerRepository){
         this.productRepository = productRepository;
+        this.sellerRepository = sellerRepository;
         Main.log.info("New Product List created");
     }
     public List<Product> getProducts(){
@@ -26,10 +31,9 @@ public class ProductService {
         Main.log.info("Product List returned: " + productList);
         return productList;
     }
-    public void addProduct(Product product) throws ProductException {
-        //when Product is created, set the ID to a randomized value
-        product.setId((int) (Math.random() * 100000000));
-        int sellerId = product.getSeller();
+    public void addProduct(long id, Product product) throws ProductException {
+        Optional<Seller> optional = sellerRepository.findById(id);
+        Seller seller;
         if(product.getName() == null || product.getName().isEmpty()){
             Main.log.warn("Product name is empty");
             throw new ProductException("Product name is empty");
@@ -38,24 +42,30 @@ public class ProductService {
             Main.log.warn("Product price is less than or equal to 0");
             throw new ProductException("Product price is less than or equal to 0");
         }
-        if(!sellerService.isVerifiedSeller(sellerId)){
-            Main.log.warn("Seller with id " + sellerId + " is not a verified Seller");
-            throw new ProductException("Seller " + sellerId + " is not a verified Seller");
+        if(optional.isEmpty()){
+            Main.log.warn("Seller with id " + id + " is not a verified Seller");
+            throw new ProductException("Seller " + id + " is not a verified Seller");
+        } else {
+            seller = optional.get();
         }
-        //how to fix this from always being null
-        //old version: (productDAO.getProductById(product.getId()) == null)
-        if(productRepository.findById(product.getId()) == null){
-            productRepository.save(product);
-            Main.log.info("Product added: " + product.toString());
-        }
+        Product savedProduct = productRepository.save(product);
+        //if the saving products to sellers doesn't work, remove next 2 lines, and remove everything before "=" above
+        seller.getProducts().add(savedProduct);
+        sellerRepository.save(seller);
+        Main.log.info("Product added: " + product.toString());
     }
-    public Product getProductById(int id){
+
+    public Product getProductById(long id) throws ProductNotFoundException {
         Optional<Product> productOptional = productRepository.findById(id);
-        Product product = productOptional.get();
-        Main.log.info("Product found: " + product);
-        return productOptional.get();
+        if(productOptional.isEmpty()) {
+            throw new ProductNotFoundException("Product not found");
+        }else{
+            Product product = productOptional.get();
+            Main.log.info("Product found: " + product);
+            return productOptional.get();
+        }
     }
-    public Product updateProduct(int id, Product product) throws ProductException {
+    public Product updateProduct(long id, Product product) throws ProductException {
         if(product.getName() == null || product.getName().isEmpty()){
             Main.log.warn("Product name is empty");
             throw new ProductFormatException("Product name is empty");
@@ -64,23 +74,22 @@ public class ProductService {
             Main.log.warn("Product price is less than or equal to 0");
             throw new ProductFormatException("Product price is less than or equal to 0");
         }
-        try {
-            //original: productDAO.updateProduct(product);
-            Optional<Product> productOptional = productRepository.findById(id);
+        Optional<Product> productOptional = productRepository.findById(id);
+        if(productOptional.isPresent()) {
             Product updatedproduct = productOptional.get();
             productRepository.save(updatedproduct);
             Main.log.info("Product updated. New values: " + product);
-        //how to make this throw??
-        }catch (JdbcSQLDataException e){
-            e.printStackTrace();
+        } else {
             throw new ProductException("Invalid Seller");
         }
         return product;
     }
-    public void deleteProduct(int id){
+    public void deleteProduct(long id){
         Optional<Product> productOptional = productRepository.findById(id);
-        Product product = productOptional.get();
-        productRepository.delete(product);
-        Main.log.info("Product deleted: " + id);
+        if(productOptional.isPresent()) {
+            Product product = productOptional.get();
+            productRepository.delete(product);
+            Main.log.info("Product deleted: " + id);
+        }
     }
 }
