@@ -41,11 +41,14 @@ public class ProductService {
             throw new ProductException("Product price is less than or equal to 0");
         }
         if(optional.isEmpty()){
+            //based on method of adding product to a specific seller (instead of indicating seller in request body),
+            //this log/exception will not be thrown, but the controller BAD_REQUEST will be
             Main.log.warn("Seller with id " + id + " is not a verified Seller");
             throw new ProductException("Seller " + id + " is not a verified Seller");
         } else {
             seller = optional.get();
         }
+        product.setSeller(seller);
         Product savedProduct = productRepository.save(product);
         seller.getProducts().add(savedProduct);
         sellerRepository.save(seller);
@@ -54,12 +57,13 @@ public class ProductService {
 
     public Product getProductById(long id) throws ProductNotFoundException {
         Optional<Product> productOptional = productRepository.findById(id);
-        if(productOptional.isEmpty()) {
-            throw new ProductNotFoundException("Product not found");
-        }else{
+        if(productOptional.isPresent()) {
             Product product = productOptional.get();
             Main.log.info("Product found: " + product);
             return productOptional.get();
+        }else{
+            Main.log.warn("Product not found: " + id);
+            throw new ProductNotFoundException("Product not found");
         }
     }
     public void updateProduct(long id, Product product) throws ProductException {
@@ -74,11 +78,13 @@ public class ProductService {
         Optional<Product> productOptional = productRepository.findById(id);
         if(productOptional.isPresent()) {
             Product updatedproduct = productOptional.get();
-            updatedproduct.setName(product.getName());//update product name
-            updatedproduct.setPrice(product.getPrice());//update price
+            updatedproduct.setName(product.getName());
+            updatedproduct.setPrice(product.getPrice());
             productRepository.save(updatedproduct);
             Main.log.info("Product updated. New values: " + product);
         } else {
+            //based on method of updating product for a specific seller (instead of indicating seller in request body),
+            //this log/exception will not be thrown, but the controller BAD_REQUEST will be
             throw new ProductException("Invalid Seller");
         }
     }

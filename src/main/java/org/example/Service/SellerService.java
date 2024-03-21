@@ -41,6 +41,7 @@ public class SellerService {
         }
         else{
             this.sellerRepository.save(seller);
+            Main.log.info("New seller added: " +seller);
         }
     }
 }

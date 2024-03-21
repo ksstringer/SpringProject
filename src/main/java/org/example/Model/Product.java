@@ -10,7 +10,6 @@ import lombok.*;
 @AllArgsConstructor
 @Data
 @EqualsAndHashCode
-@ToString
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -21,4 +20,14 @@ public class Product {
     @ManyToOne
     @JsonIgnoreProperties("products")
     public Seller seller;
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", price=" + price +
+                ", seller=" + seller.getName() +
+                '}';
+    }
 }

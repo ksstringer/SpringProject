@@ -10,7 +10,6 @@ import java.util.List;
 @AllArgsConstructor
 @Data
 @EqualsAndHashCode
-@ToString
 public class Seller {
     private String name;
     @Id
@@ -19,4 +18,13 @@ public class Seller {
     @OneToMany
     @JoinColumn(name="seller_fk")
     public List<Product> products;
+
+    @Override
+    public String toString() {
+        return "Seller{" +
+                "name='" + name + '\'' +
+                ", id=" + id +
+                ", products=" + products +
+                '}';
+    }
 }

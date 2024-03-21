@@ -25,7 +25,7 @@ public class ProductController {
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
     @PostMapping("seller/{id}/product")
-    public ResponseEntity<Product> postProductEndpoint(@RequestBody Product product, @PathVariable long id) throws ProductException {
+    public ResponseEntity<Product> postProductEndpoint(@RequestBody Product product, @PathVariable long id){
         try{
             productService.addProduct(id, product);
             return new ResponseEntity<>(product, HttpStatus.CREATED);
@@ -47,9 +47,10 @@ public class ProductController {
         try{
             if(productService.getProductById(id) != null) {
                 productService.deleteProduct(id);
+                return new ResponseEntity<>(HttpStatus.OK);
             }
         }catch (ProductException e){
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.OK);
         }
         return null;
     }
