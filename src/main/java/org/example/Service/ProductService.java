@@ -3,21 +3,14 @@ package org.example.Service;
 import org.example.Exception.ProductException;
 import org.example.Exception.ProductFormatException;
 import org.example.Exception.ProductNotFoundException;
-import org.example.Exception.SellerException;
 import org.example.Main;
 import org.example.Model.Product;
 import org.example.Model.Seller;
 import org.example.Repository.ProductRepository;
 import org.example.Repository.SellerRepository;
-import org.h2.jdbc.JdbcSQLDataException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
-import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -81,6 +74,8 @@ public class ProductService {
         Optional<Product> productOptional = productRepository.findById(id);
         if(productOptional.isPresent()) {
             Product updatedproduct = productOptional.get();
+            updatedproduct.setName(product.getName());//update product name
+            updatedproduct.setPrice(product.getPrice());//update price
             productRepository.save(updatedproduct);
             Main.log.info("Product updated. New values: " + product);
         } else {

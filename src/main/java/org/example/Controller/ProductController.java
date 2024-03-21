@@ -53,8 +53,8 @@ public class ProductController {
         }
         return null;
     }
-    @PutMapping("/seller/{id}/product/{id}")
-    public ResponseEntity<Product> updateProductEndpoint(@RequestBody Product product, @RequestParam long id, @RequestParam long productId){
+    @PutMapping("/seller/{id}/product/{productId}")
+    public ResponseEntity<Product> updateProductEndpoint(@RequestBody Product product, @PathVariable("id") long id, @PathVariable("productId") long productId){
         try{
             if(productService.getProductById(productId) != null) {
                 productService.updateProduct(productId, product);

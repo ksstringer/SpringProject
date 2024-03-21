@@ -21,6 +21,4 @@ public class Product {
     @ManyToOne
     @JsonIgnoreProperties("products")
     public Seller seller;
-
-
 }
